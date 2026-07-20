@@ -16,9 +16,10 @@ QR code on bus  →  /osrtc?bus=1234  →  index.html (single dynamic page)
                                                 templated links like Chartr's)
 ```
 
-- `/{operator}` renders that operator's buyer list (e.g. `/osrtc`).
-- `/` renders the operator directly when only one exists, otherwise an operator picker.
-- `?bus=<number>` is read from the QR and substituted into any buyer URL containing `{bus_number}`. Buyers with templated URLs are hidden when no bus number is present.
+- `/{buyer}` (e.g. `/osrtc`, `/katch`, `/oneticket`, `/chartr`) shows that buyer app and hands off to its link automatically — one QR per buyer app. Slugs are case-insensitive (`/Katch` works).
+- `/` renders the full buyer list for the operator (buyer routes take priority over operator routes when names collide).
+- `?buyer=` / `?operator=` work as query-param fallbacks for local testing.
+- `?vid=<vehicle-id>` is read from the QR and substituted into any buyer URL containing `{bus_number}` (e.g. `/osrtc?vid=OD07AU3015` → `https://osrtcapp.chartr.in/buy-ticket?bus_number=OD07AU3015`). Without a vid, a buyer's `fallbackUrl` is used; buyers with neither are hidden. `?bus=` is accepted as an alias.
 - Buyers with `"enabled": false` or no URL are skipped. Missing logos fall back to an initial-letter placeholder.
 
 ## Project structure
@@ -51,6 +52,7 @@ Edit `public/buyers-config.json` — no HTML changes needed. Each operator is a 
       {
         "name": "Chartr",
         "url": "https://osrtcapp.chartr.in/buy-ticket?bus_number={bus_number}",
+        "fallbackUrl": "https://osrtcapp.chartr.in/",
         "logo": "/public/assets/buyers/chartr.png",
         "enabled": true,
         "remarks": "Link requires bus number from QR"
@@ -60,7 +62,7 @@ Edit `public/buyers-config.json` — no HTML changes needed. Each operator is a 
 }
 ```
 
-- `url` may contain `{bus_number}` — it is filled from the QR's `?bus=` parameter.
+- `url` may contain `{bus_number}` — it is filled from the QR's `?vid=` parameter; `fallbackUrl` is used when the QR has no vehicle id.
 - `logo` is optional; drop the image in `public/assets/buyers/` and reference it.
 - Set `"enabled": false` to hide a buyer without deleting it.
 
@@ -68,20 +70,27 @@ The config is served with a 5-minute cache, so buyer changes go live **without a
 
 ## QR code URLs
 
-| Placement            | URL                                    |
-|----------------------|----------------------------------------|
-| Specific bus         | `https://bus.ondc.tech/osrtc?bus=1234` |
-| Generic (stop/depot) | `https://bus.ondc.tech/osrtc`          |
+| Placement                      | URL                                     |
+|--------------------------------|-----------------------------------------|
+| Buyer-specific, on a bus       | `https://bus.ondc.tech/osrtc?vid=OD07AU3015` |
+| Buyer-specific, generic        | `https://bus.ondc.tech/katch`           |
+| All buyers (stop/depot poster) | `https://bus.ondc.tech/?vid=OD07AU3015`       |
+
+A buyer's route slug is its `slug` field in the config, or its name lowercased with non-alphanumerics stripped (`OneTicket` → `/oneticket`).
 
 ## Deployment
 
-Designed for **Netlify** or **Cloudflare Pages** — publish the repository root, no build command. `public/_redirects` rewrites all paths to `index.html` so `/osrtc` works. The `CNAME` file maps the site to `bus.ondc.tech`.
+### GitHub Pages (current)
+
+Settings → Pages → deploy from branch `main`, folder `/ (root)`. The `CNAME` file maps the site to `bus.ondc.tech` (the custom domain is required — absolute `/public/...` paths assume the site is served at the domain root, not under `/static-qr-bus/`).
+
+GitHub Pages has no rewrite rules, so `404.html` is an exact copy of `index.html` — Pages serves it for any path (`/osrtc`, `/katch`, …) with the URL intact, and the router takes over. **If you edit `index.html`, re-copy it to `404.html`** (`cp index.html 404.html`). `public/_headers` and `public/_redirects` are ignored by GitHub Pages; they are kept for a possible move to Netlify/Cloudflare Pages, where they'd apply and `404.html` would be unnecessary.
 
 ## Local development
 
 ```sh
 python3 -m http.server 8080
-# open http://localhost:8080/?operator=osrtc&bus=1234
+# open http://localhost:8080/?operator=osrtc&vid=OD07AU3015
 ```
 
 (Local servers don't apply the `_redirects` rewrite, so use the `?operator=` fallback for path-style testing.)
