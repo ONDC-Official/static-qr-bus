@@ -129,6 +129,18 @@
       filter: drop-shadow(0 4px 12px rgba(0, 0, 0, .25));
     }
 
+    .operator-logo-img {
+      max-width: 200px;
+      max-height: 100px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, .25));
+    }
+
+    .operator-logo-img[hidden],
+    .bus-icon-svg[hidden] {
+      display: none;
+    }
+
     .header-text {
       display: flex;
       flex-direction: column;
@@ -386,7 +398,7 @@
           aria-label="ONDC – Open Network for Digital Commerce">
           <img src="/public/ondc-logo.svg" alt="ONDC" class="ondc-logo-img" height="34" />
         </a>
-        <span class="ondc-navbar-product">Bus Discover</span>
+        <span class="ondc-navbar-product">Explore Buses</span>
       </div>
     </nav>
 
@@ -394,7 +406,8 @@
     <header class="header">
       <div class="header-hero">
         <div class="header-logo">
-          <svg class="bus-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <img id="operator-logo" class="operator-logo-img" src="" alt="" hidden />
+          <svg id="bus-icon" class="bus-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2C7.58 2 4 2.5 4 6v9.5c0 .95.38 1.81 1 2.44V20a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h8v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-2.06c.62-.63 1-1.49 1-2.44V6c0-3.5-3.58-4-8-4zM7.5 17a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm9 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM18 11H6V6h12v5z"/>
           </svg>
         </div>
@@ -424,9 +437,7 @@
     <!-- Footer -->
     <footer class="app-footer">
       <div class="app-footer-inner">
-        <span class="app-footer-brand">Powered by ONDC</span>
-        <span class="app-footer-sep">&nbsp;·&nbsp;</span>
-        Open Network for Digital Commerce
+        <span class="app-footer-brand">Powered by ONDC Network</span>
       </div>
     </footer>
 
@@ -439,6 +450,19 @@
     var titleEl = document.getElementById('page-title');
     var subtitleEl = document.getElementById('page-subtitle');
     var busBadgeEl = document.getElementById('bus-badge');
+    var operatorLogoEl = document.getElementById('operator-logo');
+    var busIconEl = document.getElementById('bus-icon');
+
+    function setHeroLogo(src) {
+      if (src) {
+        operatorLogoEl.src = src;
+        operatorLogoEl.removeAttribute('hidden');
+        busIconEl.setAttribute('hidden', '');
+      } else {
+        operatorLogoEl.setAttribute('hidden', '');
+        busIconEl.removeAttribute('hidden');
+      }
+    }
 
     var params = new URLSearchParams(location.search);
     var busNumber = (params.get('vid') || params.get('bus') || '').trim();
@@ -468,8 +492,13 @@
       .then(function (config) {
         var operatorSlugs = Object.keys(config);
 
-        // Buyer routes take priority: /osrtc, /katch, /oneticket, /chartr …
-        // A buyer's route slug is its `slug` field or its slugified name.
+        // Operator routes first: /osrtc → that operator's buyer-options page
+        if (requestedSlug && operatorSlugs.indexOf(requestedSlug) !== -1) {
+          renderOperator(requestedSlug, config[requestedSlug]);
+          return;
+        }
+
+        // Then buyer QR routes: /katch, /oneticket … (slug field or slugified name)
         var buyerMatch = null;
         var buyerOperator = null;
         operatorSlugs.forEach(function (op) {
@@ -486,23 +515,8 @@
           return;
         }
 
-        var slug = operatorSlugs.indexOf(requestedSlug) !== -1 ? requestedSlug : '';
-
-        // No/unknown slug: if there's exactly one operator, render it; else show picker
-        if (!slug) {
-          if (requestedSlug && pathParts.length > 0 && operatorSlugs.length > 1) {
-            renderOperatorList(config, true);
-            return;
-          }
-          if (operatorSlugs.length === 1) {
-            slug = operatorSlugs[0];
-          } else {
-            renderOperatorList(config, false);
-            return;
-          }
-        }
-
-        renderOperator(slug, config[slug]);
+        // Root (and anything unknown) → landing page with the operator picker
+        renderOperatorList(config, false);
       })
       .catch(function () {
         renderStatus('error', 'Something went wrong',
@@ -549,9 +563,10 @@
 
     function renderOperator(slug, operator) {
       var name = operator.displayName || slug.toUpperCase();
-      titleEl.textContent = 'Bus Tickets — ' + name;
+      titleEl.textContent = operator.heroTitle || ('Bus Tickets — ' + name);
       document.title = 'Bus Tickets — ' + name + ' | ONDC';
-      if (operator.description) subtitleEl.textContent = operator.description;
+      subtitleEl.textContent = operator.tagline || operator.description || subtitleEl.textContent;
+      setHeroLogo(operator.heroLogo);
 
       if (busNumber) {
         busBadgeEl.textContent = 'Bus No. ' + busNumber;
@@ -572,8 +587,8 @@
       }
 
       var items = buyers.map(function (b) {
-        // Link to the buyer's own route (/osrtc?vid=…) — it performs the hand-off
-        var url = '/' + slugify(b.slug || b.name) + (busNumber ? '?vid=' + encodeURIComponent(busNumber) : '');
+        // Direct hand-off to the buyer app, vid filled into templated links
+        var url = resolveUrl(b);
         return '<li class="seller-item">' +
           '<a href="' + escapeAttr(url) + '">' +
           logoHtml(b) +
@@ -587,17 +602,23 @@
     }
 
     function renderOperatorList(config, notFound) {
-      titleEl.textContent = notFound ? 'Operator Not Found' : 'Select Your Operator';
+      titleEl.textContent = 'Get Bus Digital Tickets via ONDC and Other Applications';
+      subtitleEl.textContent = 'Beat the queue, bus tickets in a jiffy';
+      document.title = 'Bus Ticketing | ONDC';
+      setHeroLogo('');
       var items = Object.keys(config).map(function (slug) {
         var name = config[slug].displayName || slug.toUpperCase();
-        var href = '/' + slug + (busNumber ? '?vid=' + encodeURIComponent(busNumber) : '');
+        // vid from the QR wins; otherwise the operator's configured default
+        var vid = busNumber || config[slug].defaultVid || '';
+        var href = '/' + slug + (vid ? '?vid=' + encodeURIComponent(vid) : '');
         return '<li class="seller-item"><a href="' + escapeAttr(href) + '">' +
-          logoHtml({ name: name }) +
+          logoHtml({ name: name, logo: config[slug].logo || config[slug].heroLogo }) +
           '<span class="seller-name">' + escapeHtml(name) + '</span>' +
           '<svg class="seller-arrow" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>' +
           '</a></li>';
       }).join('');
       mainEl.innerHTML = '<ul class="seller-list">' + items + '</ul>';
+      attachLogoFallbacks();
     }
 
     function logoHtml(buyer) {

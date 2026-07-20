@@ -2,6 +2,10 @@
   "osrtc": {
     "displayName": "OSRTC",
     "description": "Odisha State Road Transport Corporation",
+    "defaultVid": "OD07AU3015",
+    "heroLogo": "/public/assets/buyers/osrtc.png",
+    "heroTitle": "Get OSRTC Digital Tickets via ONDC and Other Applications",
+    "tagline": "Beat the queue, bus tickets in a jiffy",
     "buyers": [
       {
         "name": "OSRTC",
@@ -30,7 +34,7 @@
         "name": "Chartr",
         "url": "https://osrtcapp.chartr.in/buy-ticket?bus_number={bus_number}",
         "logo": "",
-        "enabled": true,
+        "enabled": false,
         "remarks": "Logo awaited; link requires bus number from QR"
       }
     ]
