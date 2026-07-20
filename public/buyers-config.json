@@ -1,0 +1,36 @@
+{
+  "osrtc": {
+    "displayName": "OSRTC",
+    "description": "Odisha State Road Transport Corporation",
+    "buyers": [
+      {
+        "name": "OSRTC",
+        "url": "https://osrtcapp.chartr.in/",
+        "logo": "/public/assets/buyers/osrtc.png",
+        "enabled": true,
+        "remarks": "Temporary link"
+      },
+      {
+        "name": "Katch",
+        "url": "",
+        "logo": "",
+        "enabled": false,
+        "remarks": "App link and logo pending — only Google Doc provided in sheet"
+      },
+      {
+        "name": "OneTicket",
+        "url": "https://oneticket-prod-dashboard.sequelstring.com/dynamic-url/redirect",
+        "logo": "",
+        "enabled": true,
+        "remarks": "Logo pending"
+      },
+      {
+        "name": "Chartr",
+        "url": "https://osrtcapp.chartr.in/buy-ticket?bus_number={bus_number}",
+        "logo": "",
+        "enabled": true,
+        "remarks": "Logo awaited; link requires bus number from QR"
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+/*
+  # Security headers for all responses
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+
+# Long cache for static assets (logos, icons)
+/public/assets/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# Short cache + revalidation for the config JSON (update without redeploy)
+/public/buyers-config.json
+  Cache-Control: public, max-age=300, stale-while-revalidate=3600
+
+# HTML: no cache (always fetch latest shell)
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+/
+  Cache-Control: public, max-age=0, must-revalidate
