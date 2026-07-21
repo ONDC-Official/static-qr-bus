@@ -1,1 +1,44 @@
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.suo
+*.swp
+*.swo
+*~
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies (if tooling is added later)
+node_modules/
+
+# Build output (if a build step is added later)
+dist/
+build/
+_site/
+
+# Generated HTML (from scripts/generate.mjs) — every top-level directory is
+# a build-output group folder except these fixed project directories.
+/index.html
+/*/
+!/public/
+!/data/
+!/scripts/
+!/.github/
