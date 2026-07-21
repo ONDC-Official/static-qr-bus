@@ -23,6 +23,10 @@
       padding: 0;
     }
 
+    html {
+      min-height: 100%;
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
       background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -42,7 +46,7 @@
     .app-root {
       width: 100%;
       max-width: 430px;
-      min-height: calc(100dvh - 64px);
+      height: calc(100dvh - 64px);
       background: #F4F6F9;
       border-radius: 40px;
       overflow: clip;
@@ -57,8 +61,7 @@
       background: #fff;
       border-bottom: 1px solid #e2e8f0;
       box-shadow: 0 1px 6px rgba(0, 0, 0, .06);
-      position: sticky;
-      top: 0;
+      flex-shrink: 0;
       z-index: 100;
     }
 
@@ -102,6 +105,7 @@
       padding: 20px 16px 20px;
       display: flex;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .header-hero {
@@ -183,6 +187,10 @@
     /* ── Main content area ── */
     .app-content {
       flex: 1;
+      /* Only this region scrolls — navbar and footer stay pinned */
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -326,6 +334,7 @@
     .app-footer {
       background: #0D2137;
       padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+      flex-shrink: 0;
     }
 
     .app-footer-inner {
@@ -380,7 +389,7 @@
       }
       .app-root {
         max-width: 100%;
-        min-height: 100dvh;
+        height: 100dvh;
         border-radius: 0;
         box-shadow: none;
       }
@@ -398,7 +407,7 @@
           aria-label="ONDC – Open Network for Digital Commerce">
           <img src="/public/ondc-logo.svg" alt="ONDC" class="ondc-logo-img" height="34" />
         </a>
-        <span class="ondc-navbar-product">Explore Buses</span>
+        <span class="ondc-navbar-product">Discover Buses</span>
       </div>
     </nav>
 
@@ -602,8 +611,8 @@
     }
 
     function renderOperatorList(config, notFound) {
-      titleEl.textContent = 'Get Bus Digital Tickets via ONDC and Other Applications';
-      subtitleEl.textContent = 'Beat the queue, bus tickets in a jiffy';
+      titleEl.textContent = 'Get Bus Digital Tickets via ONDC';
+      subtitleEl.textContent = 'Bus tickets in a jiffy';
       document.title = 'Bus Ticketing | ONDC';
       setHeroLogo('');
       var items = Object.keys(config).map(function (slug) {

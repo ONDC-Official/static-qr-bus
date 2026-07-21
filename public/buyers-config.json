@@ -4,8 +4,8 @@
     "description": "Odisha State Road Transport Corporation",
     "defaultVid": "OD07AU3015",
     "heroLogo": "/public/assets/buyers/osrtc.png",
-    "heroTitle": "Get OSRTC Digital Tickets via ONDC and Other Applications",
-    "tagline": "Beat the queue, bus tickets in a jiffy",
+    "heroTitle": "Get OSRTC Digital Tickets via ONDC",
+    "tagline": "Bus tickets in a jiffy",
     "buyers": [
       {
         "name": "OSRTC",
