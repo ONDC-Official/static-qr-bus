@@ -1,0 +1,49 @@
+{
+  "site": {
+    "gaId": "G-SJEL7S80GE",
+    "productName": "Discover Bus",
+    "orgName": "ONDC"
+  },
+  "groups": [
+    {
+      "slug": "odisha",
+      "name": "Odisha",
+      "entities": [
+        {
+          "slug": "osrtc",
+          "name": "OSRTC",
+          "title": "Get OSRTC Digital Tickets via ONDC",
+          "photo": "/public/images/buyers/osrtc.png",
+          "defaultVid": "OD07AU3015",
+          "buyers": [
+            {
+              "label": "OSRTC",
+              "status": "live",
+              "logo": "/public/images/buyers/osrtc.png",
+              "url": "https://osrtcapp.chartr.in/buy-ticket?bus_number={bus_number}",
+              "fallbackUrl": "https://osrtcapp.chartr.in/"
+            },
+            {
+              "label": "Katch",
+              "status": "live",
+              "logo": "/public/images/buyers/katch.png",
+              "url": "https://play.google.com/store/apps/details?id=com.katchcard.user&hl=en"
+            },
+            {
+              "label": "OneTicket",
+              "status": "live",
+              "logo": "/public/images/buyers/oneticket.png",
+              "url": "https://oneticket-prod-dashboard.sequelstring.com/dynamic-url/redirect"
+            },
+            {
+              "label": "Chartr",
+              "status": "na",
+              "logo": "",
+              "url": "https://osrtcapp.chartr.in/buy-ticket?bus_number={bus_number}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

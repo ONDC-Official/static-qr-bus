@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Tickets — {{ENTITY_NAME}}, {{GROUP_NAME}} | {{ORG_NAME}}</title>
+    <meta
+      name="description"
+      content="Book {{ENTITY_NAME}}, {{GROUP_NAME}} bus tickets from an authorised {{ORG_NAME}} buyer app."
+    />
+    <link rel="icon" type="image/png" href="/public/images/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/public/css/entity.css" />
+
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id={{GA_ID}}"
+    ></script>
+    <script src="/public/js/app.js" defer></script>
+  </head>
+
+  <body data-group="{{GROUP_SLUG}}" data-entity="{{ENTITY_SLUG}}">
+    <div class="app-root">
+      <div id="navbar-slot"></div>
+
+      <!-- Hero header -->
+      <header class="header">
+        <div class="header-hero">
+          <div class="header-logo" id="header-logo"></div>
+          <div class="header-text">
+            <h1 class="header-title" id="page-title">
+              {{ENTITY_TITLE}}
+            </h1>
+            <p class="header-subtitle">
+              Bus tickets in a jiffy
+            </p>
+            <p class="bus-badge" id="bus-badge" hidden></p>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dynamic content, rendered from data/entities.json by public/js/app.js -->
+      <main class="app-content" id="main-content">
+        <div class="status-wrap">
+          <p class="status-body">Loading buyer apps…</p>
+        </div>
+      </main>
+
+      <div id="footer-slot"></div>
+    </div>
+  </body>
+</html>
