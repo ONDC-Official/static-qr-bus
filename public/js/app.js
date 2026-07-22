@@ -18,14 +18,14 @@
     'aria-label="ONDC – Open Network for Digital Commerce">' +
     '<img src="/public/images/ondc-logo.svg" alt="ONDC" class="ondc-logo-img" height="34" />' +
     "</a>" +
-    '<span class="ondc-navbar-product">Discover Bus</span>' +
+    '<span class="ondc-navbar-product">Discover Buses</span>' +
     "</div>" +
     "</nav>";
 
   var FOOTER_HTML =
     '<footer class="app-footer">' +
     '<div class="app-footer-inner">' +
-    '<span class="app-footer-brand">Powered by ONDC</span>' +
+    '<span class="app-footer-brand">Powered by ONDC Network</span>' +
     "</div>" +
     "</footer>";
 
@@ -54,7 +54,10 @@
   }
   gtag("js", new Date());
   gtag("set", "user_properties", { platform_os: os });
-  gtag("config", GA_ID);
+  // Attach bus_number to the automatic page_view when ?vid= / ?bus= is present
+  // (e.g. /odisha/osrtc/?vid=OD07AU3015). Also sent on buyer_app_click /
+  // platform_detected after the entity page finishes loading.
+  gtag("config", GA_ID, busNumber ? { bus_number: busNumber } : {});
 
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, function (c) {
@@ -82,10 +85,7 @@
     if ((current.get("vid") || current.get("bus") || "").trim()) return;
     current.set("vid", vid);
     var next =
-      location.pathname +
-      "?" +
-      current.toString() +
-      (location.hash || "");
+      location.pathname + "?" + current.toString() + (location.hash || "");
     history.replaceState(null, "", next);
   }
 
@@ -203,6 +203,7 @@
           app_name: link.dataset.app || "unknown",
           platform_os: os,
           entity_name: fullName,
+          bus_number: busNumber || "",
           destination_url: link.href,
         });
       });
@@ -211,6 +212,7 @@
     gtag("event", "platform_detected", {
       platform_os: os,
       entity_name: fullName,
+      bus_number: busNumber || "",
     });
   }
 
@@ -281,7 +283,7 @@
             );
 
           if (titleEl) titleEl.textContent = groupOnly.name;
-          document.title = "Discover Bus — " + groupOnly.name + " | ONDC";
+          document.title = "Discover Buses — " + groupOnly.name + " | ONDC";
           renderLinkList(
             container,
             groupOnly.entities,

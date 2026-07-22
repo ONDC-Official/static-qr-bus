@@ -75,7 +75,7 @@ nothing else needs to change for day-to-day updates.
 {
   "site": {
     "gaId": "G-SJEL7S80GE",
-    "productName": "Discover Bus",
+    "productName": "Discover Buses",
     "orgName": "ONDC"
   },
   "groups": [
@@ -142,12 +142,12 @@ Generated HTML is git-ignored — rebuilt on every deploy.
 
 ## QR code URLs
 
-| Placement                | URL                                                    |
-|--------------------------|--------------------------------------------------------|
-| Operator list (on a bus) | `https://bus.ondc.tech/odisha/osrtc/?vid=OD07AU3015`   |
-| Operator list (generic)  | `https://bus.ondc.tech/odisha/osrtc/`                  |
-| Region picker            | `https://bus.ondc.tech/odisha/`                        |
-| All regions              | `https://bus.ondc.tech/`                               |
+| Placement                | URL                                                  |
+| ------------------------ | ---------------------------------------------------- |
+| Operator list (on a bus) | `https://bus.ondc.tech/odisha/osrtc/?vid=OD07AU3015` |
+| Operator list (generic)  | `https://bus.ondc.tech/odisha/osrtc/`                |
+| Region picker            | `https://bus.ondc.tech/odisha/`                      |
+| All regions              | `https://bus.ondc.tech/`                             |
 
 ## Local development
 
