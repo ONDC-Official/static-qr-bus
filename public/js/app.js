@@ -67,12 +67,16 @@
     gaMeasurementId = config.measurementId;
     gtag("js", new Date());
     // Single property — landing_page and buyer_app_click both send here.
-    gtag("config", gaMeasurementId, { send_page_view: false });
+    gtag("config", gaMeasurementId);
     gaReady = true;
   }
 
   function trackLandingPage() {
     if (!gaReady || !gaMeasurementId) return;
+    console.log("trackLandingPage", {
+      platform: os,
+      send_to: gaMeasurementId,
+    });
     gtag("event", "landing_page", {
       platform: os,
       send_to: gaMeasurementId,
