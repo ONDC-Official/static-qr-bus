@@ -52,10 +52,8 @@
   }
 
   var os = getOS();
-  var landingMeasurementId = null;
-  var buyerClickMeasurementId = null;
-  var landingGaReady = false;
-  var buyerGaReady = false;
+  var gaMeasurementId = null;
+  var gaReady = false;
 
   window.dataLayer = window.dataLayer || [];
   function gtag() {
@@ -63,49 +61,33 @@
   }
 
   function initGa(analytics) {
-    var landing = analytics && analytics.landing_page;
-    var buyerClick = analytics && analytics.buyer_app_click;
-    var configured = false;
+    var config = analytics && analytics.osrtc;
+    if (!config || !config.measurementId) return;
 
-    if (landing && landing.measurementId) {
-      landingMeasurementId = landing.measurementId;
-      if (!configured) {
-        gtag("js", new Date());
-        configured = true;
-      }
-      gtag("config", landingMeasurementId, { send_page_view: false });
-      landingGaReady = true;
-    }
-
-    if (buyerClick && buyerClick.measurementId) {
-      buyerClickMeasurementId = buyerClick.measurementId;
-      if (!configured) {
-        gtag("js", new Date());
-        configured = true;
-      }
-      // Second property — buyer_app_click only; no automatic page_view.
-      gtag("config", buyerClickMeasurementId, { send_page_view: false });
-      buyerGaReady = true;
-    }
+    gaMeasurementId = config.measurementId;
+    gtag("js", new Date());
+    // Single property — landing_page and buyer_app_click both send here.
+    gtag("config", gaMeasurementId, { send_page_view: false });
+    gaReady = true;
   }
 
   function trackLandingPage() {
-    if (!landingGaReady || !landingMeasurementId) return;
+    if (!gaReady || !gaMeasurementId) return;
     gtag("event", "landing_page", {
       platform: os,
-      send_to: landingMeasurementId,
+      send_to: gaMeasurementId,
     });
   }
 
   function trackBuyerClick(payload) {
-    if (!buyerGaReady || !buyerClickMeasurementId) return;
+    if (!gaReady || !gaMeasurementId) return;
     gtag("event", "buyer_app_click", {
       buyer_name: payload.buyer_name || "",
       bus_number: payload.bus_number || "",
       platform: os,
       city: payload.city || "",
       entity_name: payload.entity_name || "",
-      send_to: buyerClickMeasurementId,
+      send_to: gaMeasurementId,
     });
   }
 

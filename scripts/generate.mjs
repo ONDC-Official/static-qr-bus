@@ -232,13 +232,13 @@ function validateAnalytics(analytics) {
   if (!analytics || typeof analytics !== "object") {
     die("analytics.json must be an object");
   }
-  validateAnalyticsEvent(analytics, "landing_page");
-  validateAnalyticsEvent(analytics, "buyer_app_click");
+  // Single GA property for landing_page and buyer_app_click events.
+  validateAnalyticsEvent(analytics, "osrtc");
 }
 
 function templateVars(site, analytics) {
   return {
-    GA_ID: analytics.landing_page.measurementId,
+    GA_ID: analytics.osrtc.measurementId,
     PRODUCT_NAME: site.productName,
     ORG_NAME: site.orgName,
   };
