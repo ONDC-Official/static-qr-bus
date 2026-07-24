@@ -73,12 +73,10 @@
 
   function trackLandingPage() {
     if (!gaReady || !gaMeasurementId) return;
-    console.log("trackLandingPage", {
-      platform: os,
-      send_to: gaMeasurementId,
-    });
+
     gtag("event", "landing_page", {
       platform: os,
+      bus_number: busNumber || "",
       send_to: gaMeasurementId,
     });
   }
