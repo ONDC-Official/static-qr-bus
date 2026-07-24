@@ -64,7 +64,7 @@
 
   function initGa(analytics) {
     var landing = analytics && analytics.landing_page;
-    var buyerClick = analytics && analytics.buyer_click;
+    var buyerClick = analytics && analytics.buyer_app_click;
     var configured = false;
 
     if (landing && landing.measurementId) {
@@ -83,7 +83,7 @@
         gtag("js", new Date());
         configured = true;
       }
-      // Second property — buyer_click only; no automatic page_view.
+      // Second property — buyer_app_click only; no automatic page_view.
       gtag("config", buyerClickMeasurementId, { send_page_view: false });
       buyerGaReady = true;
     }
@@ -99,7 +99,7 @@
 
   function trackBuyerClick(payload) {
     if (!buyerGaReady || !buyerClickMeasurementId) return;
-    gtag("event", "buyer_click", {
+    gtag("event", "buyer_app_click", {
       buyer_name: payload.buyer_name || "",
       bus_number: payload.bus_number || "",
       platform: os,

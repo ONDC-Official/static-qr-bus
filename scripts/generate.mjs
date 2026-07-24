@@ -233,7 +233,7 @@ function validateAnalytics(analytics) {
     die("analytics.json must be an object");
   }
   validateAnalyticsEvent(analytics, "landing_page");
-  validateAnalyticsEvent(analytics, "buyer_click");
+  validateAnalyticsEvent(analytics, "buyer_app_click");
 }
 
 function templateVars(site, analytics) {
