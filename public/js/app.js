@@ -2,7 +2,7 @@
   "use strict";
 
   var DATA_URL = "/data/entities.json";
-  var GA_ID = "G-SJEL7S80GE";
+  var ANALYTICS_URL = "/data/analytics.json";
 
   var LOCATION_ICON =
     '<svg class="experience-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
@@ -32,10 +32,15 @@
   var params = new URLSearchParams(location.search);
   var busNumber = (params.get("vid") || params.get("bus") || "").trim();
 
-  // Kick off the data fetch as soon as this (deferred) script runs, instead
-  // of waiting for a DOMContentLoaded handler to fire and start it later.
+  // Kick off fetches as soon as this (deferred) script runs, instead of
+  // waiting for a DOMContentLoaded handler to fire and start them later.
   var dataPromise = fetch(DATA_URL).then(function (res) {
     if (!res.ok) throw new Error("Failed to load " + DATA_URL);
+    return res.json();
+  });
+
+  var analyticsPromise = fetch(ANALYTICS_URL).then(function (res) {
+    if (!res.ok) throw new Error("Failed to load " + ANALYTICS_URL);
     return res.json();
   });
 
@@ -43,21 +48,38 @@
     var ua = navigator.userAgent || navigator.vendor || window.opera || "";
     if (/android/i.test(ua)) return "Android";
     if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) return "iOS";
-    return "Other";
+    return "Web";
   }
 
   var os = getOS();
+  var landingMeasurementId = null;
+  var gaReady = false;
 
   window.dataLayer = window.dataLayer || [];
   function gtag() {
     window.dataLayer.push(arguments);
   }
-  gtag("js", new Date());
-  gtag("set", "user_properties", { platform_os: os });
-  // Attach bus_number to the automatic page_view when ?vid= / ?bus= is present
-  // (e.g. /odisha/osrtc/?vid=OD07AU3015). Also sent on buyer_app_click /
-  // platform_detected after the entity page finishes loading.
-  gtag("config", GA_ID, busNumber ? { bus_number: busNumber } : {});
+
+  function initLandingGa(analytics) {
+    var landing = analytics && analytics.landing_page;
+    if (!landing || !landing.measurementId) return;
+    landingMeasurementId = landing.measurementId;
+    gtag("js", new Date());
+    gtag("config", landingMeasurementId, { send_page_view: false });
+    gaReady = true;
+  }
+
+  function trackLandingPage() {
+    if (!gaReady || !landingMeasurementId) return;
+    gtag("event", "landing_page", {
+      platform: os,
+      send_to: landingMeasurementId,
+    });
+  }
+
+  analyticsPromise.then(initLandingGa).catch(function () {
+    // Analytics is optional for page rendering; fail silently.
+  });
 
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, function (c) {
@@ -165,7 +187,7 @@
       "</ul>";
   }
 
-  function renderBuyerList(container, entity, fullName) {
+  function renderBuyerList(container, entity) {
     var items = entity.buyers
       .map(function (buyer) {
         if (buyer.status === "live") {
@@ -196,24 +218,6 @@
       .join("");
 
     container.innerHTML = '<ul class="seller-list">' + items + "</ul>";
-
-    container.querySelectorAll(".seller-item a").forEach(function (link) {
-      link.addEventListener("click", function () {
-        gtag("event", "buyer_app_click", {
-          app_name: link.dataset.app || "unknown",
-          platform_os: os,
-          entity_name: fullName,
-          bus_number: busNumber || "",
-          destination_url: link.href,
-        });
-      });
-    });
-
-    gtag("event", "platform_detected", {
-      platform_os: os,
-      entity_name: fullName,
-      bus_number: busNumber || "",
-    });
   }
 
   function applyHeaderLogo(photoUrl, altText) {
@@ -272,7 +276,14 @@
           document.title = "Book Tickets — " + fullName + " | ONDC";
           applyHeaderLogo(entity.photo, fullName);
           applyBusBadge();
-          renderBuyerList(container, entity, fullName);
+          renderBuyerList(container, entity);
+
+          // Fire after analytics is ready so config runs before the event.
+          analyticsPromise
+            .then(function () {
+              trackLandingPage();
+            })
+            .catch(function () {});
         } else if (groupSlug) {
           var groupOnly = findBySlug(data.groups, groupSlug);
           if (!groupOnly)

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Generate static HTML pages from data/entities.json into the repo root.
-// Generic — copy scripts/ (this file + templates/) to any project; the only
-// thing that changes per project is data/entities.json.
+// Generic — copy scripts/ (this file + templates/) to any project; per-project
+// inputs are data/entities.json and data/analytics.json.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const DATA_PATH = path.join(ROOT, "data", "entities.json");
+const ANALYTICS_PATH = path.join(ROOT, "data", "analytics.json");
 const TEMPLATES_DIR = path.join(__dirname, "templates");
 
 const VALID_STATUSES = new Set(["live", "pending", "na"]);
@@ -79,7 +80,6 @@ function validate(data) {
   if (!data || typeof data !== "object") die("entities.json must be an object");
 
   const site = data.site || {};
-  if (!site.gaId) errors.push("site.gaId is required");
   if (!site.productName) errors.push("site.productName is required");
   if (!site.orgName) errors.push("site.orgName is required");
 
@@ -215,28 +215,47 @@ function removeStale(data) {
   }
 }
 
-function templateVars(site) {
+function validateAnalytics(analytics) {
+  if (!analytics || typeof analytics !== "object") {
+    die("analytics.json must be an object");
+  }
+  const landing = analytics.landing_page;
+  if (!landing || typeof landing !== "object") {
+    die("analytics.json landing_page is required");
+  }
+  if (!landing.measurementId) {
+    die("analytics.json landing_page.measurementId is required");
+  }
+  if (!landing.propertyId) {
+    die("analytics.json landing_page.propertyId is required");
+  }
+}
+
+function templateVars(site, analytics) {
   return {
-    GA_ID: site.gaId,
+    GA_ID: analytics.landing_page.measurementId,
     PRODUCT_NAME: site.productName,
     ORG_NAME: site.orgName,
   };
 }
 
-function generate(data) {
+function generate(data, analytics) {
   const site = data.site;
   const rootTpl = readTemplate("root.html");
   const groupTpl = readTemplate("group.html");
   const entityTpl = readTemplate("entity.html");
 
-  writeFile(path.join(ROOT, "index.html"), fill(rootTpl, templateVars(site)));
+  writeFile(
+    path.join(ROOT, "index.html"),
+    fill(rootTpl, templateVars(site, analytics))
+  );
   console.log("wrote index.html");
 
   for (const group of data.groups) {
     writeFile(
       path.join(ROOT, group.slug, "index.html"),
       fill(groupTpl, {
-        ...templateVars(site),
+        ...templateVars(site, analytics),
         GROUP_NAME: group.name,
         GROUP_SLUG: group.slug,
       })
@@ -247,7 +266,7 @@ function generate(data) {
       writeFile(
         path.join(ROOT, group.slug, entity.slug, "index.html"),
         fill(entityTpl, {
-          ...templateVars(site),
+          ...templateVars(site, analytics),
           GROUP_NAME: group.name,
           GROUP_SLUG: group.slug,
           ENTITY_NAME: entity.name,
@@ -261,7 +280,9 @@ function generate(data) {
 }
 
 const data = readJson(DATA_PATH);
+const analytics = readJson(ANALYTICS_PATH);
 validate(data);
+validateAnalytics(analytics);
 removeStale(data);
-generate(data);
+generate(data, analytics);
 console.log("generate: done");
