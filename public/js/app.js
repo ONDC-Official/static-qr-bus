@@ -87,7 +87,7 @@
       buyer_name: payload.buyer_name || "",
       bus_number: payload.bus_number || "",
       platform: os,
-      city: payload.city || "",
+      state: payload.state || "",
       entity_name: payload.entity_name || "",
       send_to: gaMeasurementId,
     });
@@ -240,7 +240,7 @@
         trackBuyerClick({
           buyer_name: link.dataset.app || "unknown",
           bus_number: busNumber || "",
-          city: groupName || "",
+          state: groupName || "",
           entity_name: entity.name || "",
         });
       });
