@@ -53,31 +53,63 @@
 
   var os = getOS();
   var landingMeasurementId = null;
-  var gaReady = false;
+  var buyerClickMeasurementId = null;
+  var landingGaReady = false;
+  var buyerGaReady = false;
 
   window.dataLayer = window.dataLayer || [];
   function gtag() {
     window.dataLayer.push(arguments);
   }
 
-  function initLandingGa(analytics) {
+  function initGa(analytics) {
     var landing = analytics && analytics.landing_page;
-    if (!landing || !landing.measurementId) return;
-    landingMeasurementId = landing.measurementId;
-    gtag("js", new Date());
-    gtag("config", landingMeasurementId, { send_page_view: false });
-    gaReady = true;
+    var buyerClick = analytics && analytics.buyer_click;
+    var configured = false;
+
+    if (landing && landing.measurementId) {
+      landingMeasurementId = landing.measurementId;
+      if (!configured) {
+        gtag("js", new Date());
+        configured = true;
+      }
+      gtag("config", landingMeasurementId, { send_page_view: false });
+      landingGaReady = true;
+    }
+
+    if (buyerClick && buyerClick.measurementId) {
+      buyerClickMeasurementId = buyerClick.measurementId;
+      if (!configured) {
+        gtag("js", new Date());
+        configured = true;
+      }
+      // Second property — buyer_click only; no automatic page_view.
+      gtag("config", buyerClickMeasurementId, { send_page_view: false });
+      buyerGaReady = true;
+    }
   }
 
   function trackLandingPage() {
-    if (!gaReady || !landingMeasurementId) return;
+    if (!landingGaReady || !landingMeasurementId) return;
     gtag("event", "landing_page", {
       platform: os,
       send_to: landingMeasurementId,
     });
   }
 
-  analyticsPromise.then(initLandingGa).catch(function () {
+  function trackBuyerClick(payload) {
+    if (!buyerGaReady || !buyerClickMeasurementId) return;
+    gtag("event", "buyer_click", {
+      buyer_name: payload.buyer_name || "",
+      bus_number: payload.bus_number || "",
+      platform: os,
+      city: payload.city || "",
+      entity_name: payload.entity_name || "",
+      send_to: buyerClickMeasurementId,
+    });
+  }
+
+  analyticsPromise.then(initGa).catch(function () {
     // Analytics is optional for page rendering; fail silently.
   });
 
@@ -187,7 +219,7 @@
       "</ul>";
   }
 
-  function renderBuyerList(container, entity) {
+  function renderBuyerList(container, entity, groupName) {
     var items = entity.buyers
       .map(function (buyer) {
         if (buyer.status === "live") {
@@ -218,6 +250,17 @@
       .join("");
 
     container.innerHTML = '<ul class="seller-list">' + items + "</ul>";
+
+    container.querySelectorAll(".seller-item a").forEach(function (link) {
+      link.addEventListener("click", function () {
+        trackBuyerClick({
+          buyer_name: link.dataset.app || "unknown",
+          bus_number: busNumber || "",
+          city: groupName || "",
+          entity_name: entity.name || "",
+        });
+      });
+    });
   }
 
   function applyHeaderLogo(photoUrl, altText) {
@@ -276,7 +319,7 @@
           document.title = "Book Tickets — " + fullName + " | ONDC";
           applyHeaderLogo(entity.photo, fullName);
           applyBusBadge();
-          renderBuyerList(container, entity);
+          renderBuyerList(container, entity, group.name);
 
           // Fire after analytics is ready so config runs before the event.
           analyticsPromise

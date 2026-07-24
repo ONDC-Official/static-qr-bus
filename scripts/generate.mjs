@@ -215,20 +215,25 @@ function removeStale(data) {
   }
 }
 
+function validateAnalyticsEvent(analytics, key) {
+  const block = analytics[key];
+  if (!block || typeof block !== "object") {
+    die("analytics.json " + key + " is required");
+  }
+  if (!block.measurementId) {
+    die("analytics.json " + key + ".measurementId is required");
+  }
+  if (!block.propertyId) {
+    die("analytics.json " + key + ".propertyId is required");
+  }
+}
+
 function validateAnalytics(analytics) {
   if (!analytics || typeof analytics !== "object") {
     die("analytics.json must be an object");
   }
-  const landing = analytics.landing_page;
-  if (!landing || typeof landing !== "object") {
-    die("analytics.json landing_page is required");
-  }
-  if (!landing.measurementId) {
-    die("analytics.json landing_page.measurementId is required");
-  }
-  if (!landing.propertyId) {
-    die("analytics.json landing_page.propertyId is required");
-  }
+  validateAnalyticsEvent(analytics, "landing_page");
+  validateAnalyticsEvent(analytics, "buyer_click");
 }
 
 function templateVars(site, analytics) {
